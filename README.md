@@ -4,7 +4,7 @@
 
 ## 下载
 
-[下载 Android APK（v1.0.3）](release/dongfang-timetable-1.0.3.apk)
+[下载最新 Android APK（v1.0.3）](https://github.com/my832/dongfang-timetable/releases/latest/download/dongfang-timetable-1.0.3.apk)
 
 最低支持 Android 8.0。下载 APK 后在手机上打开安装。教务系统导入需连接校园网并关闭代理。
 
