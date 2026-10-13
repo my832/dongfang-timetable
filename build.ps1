@@ -13,6 +13,8 @@ if (!$tools -or !$platform) { throw 'Android SDK Platform and Build Tools are re
 $env:JAVA_HOME = $JavaHome
 $env:PATH = "$JavaHome/bin;$env:PATH"
 New-Item -ItemType Directory -Force -Path "$build/classes", "$build/dex" | Out-Null
+Get-ChildItem -LiteralPath "$build/classes" -Force | Remove-Item -Recurse -Force
+Get-ChildItem -LiteralPath "$build/dex" -Force | Remove-Item -Recurse -Force
 function Check-Exit { if ($LASTEXITCODE -ne 0) { throw "Build command failed: $LASTEXITCODE" } }
 & "$tools/aapt2.exe" compile --dir "$app/res" -o "$build/resources.zip"; Check-Exit
 & "$tools/aapt2.exe" link -o "$build/base.apk" -I "$platform/android.jar" --manifest "$app/AndroidManifest.xml" -A "$app/assets" -R "$build/resources.zip" --auto-add-overlay; Check-Exit
