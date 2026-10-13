@@ -1,0 +1,9 @@
+build/
+sdk/
+*.jks
+*.keystore
+*.p12
+*.idsig
+local.properties
+.env*
+

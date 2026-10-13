@@ -1,0 +1,13 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="18dp" android:background="@drawable/widget_background">
+ <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+  <TextView android:id="@+id/widget_title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="今日课程" android:textColor="#234D3E" android:textSize="21sp" android:textStyle="bold"/>
+  <TextView android:id="@+id/widget_refresh" android:layout_width="40dp" android:layout_height="40dp" android:gravity="center" android:text="↻" android:textColor="#234D3E" android:textSize="26sp" android:contentDescription="刷新小组件"/>
+ </LinearLayout>
+ <TextView android:id="@+id/widget_subtitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#6A7D72" android:textSize="13sp" android:layout_marginBottom="8dp"/>
+ <TextView android:id="@+id/widget_row0" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#20382D" android:textSize="16sp" android:maxLines="2" android:ellipsize="end" android:paddingTop="6dp" android:paddingBottom="6dp"/>
+ <TextView android:id="@+id/widget_row1" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#20382D" android:textSize="16sp" android:maxLines="2" android:ellipsize="end" android:paddingTop="6dp" android:paddingBottom="6dp"/>
+ <TextView android:id="@+id/widget_row2" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#20382D" android:textSize="16sp" android:maxLines="2" android:ellipsize="end" android:paddingTop="6dp" android:paddingBottom="6dp"/>
+ <TextView android:id="@+id/widget_row3" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#20382D" android:textSize="16sp" android:maxLines="2" android:ellipsize="end" android:paddingTop="6dp" android:paddingBottom="6dp"/>
+ <TextView android:id="@+id/widget_row4" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#20382D" android:textSize="16sp" android:maxLines="2" android:ellipsize="end" android:paddingTop="6dp" android:paddingBottom="6dp"/>
+ <TextView android:id="@+id/widget_more" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#6A7D72" android:textSize="12sp" android:paddingTop="8dp"/>
+</LinearLayout>
