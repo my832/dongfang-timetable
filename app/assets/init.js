@@ -1,6 +1,7 @@
 'use strict';
 // Resolve appearance before styles can paint the first WebView frame.
 if (typeof Native !== 'undefined') {
+ document.documentElement.dataset.nativeSurface='true';
  document.documentElement.dataset.theme=Native.isDarkTheme()?'dark':'light';
 } else {
  let appearance='system';

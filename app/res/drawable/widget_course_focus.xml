@@ -1,0 +1,1 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="@color/course_widget_focus"/><corners android:radius="18dp"/></shape>

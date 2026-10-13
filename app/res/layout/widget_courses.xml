@@ -1,0 +1,44 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/course_widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="14dp" android:background="@drawable/widget_course_background">
+ <LinearLayout android:layout_width="match_parent" android:layout_height="28dp" android:orientation="horizontal" android:gravity="center_vertical">
+  <TextView android:id="@+id/course_widget_heading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="课程表" android:textColor="@color/course_widget_text" android:textSize="16sp" android:textStyle="bold"/>
+  <TextView android:id="@+id/course_widget_date" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:gravity="end" android:layout_marginStart="8dp" android:text="10月13日 周二" android:textColor="@color/course_widget_secondary" android:textSize="12sp" android:maxLines="1"/>
+  <ImageView android:id="@+id/course_widget_refresh" android:layout_width="28dp" android:layout_height="28dp" android:padding="5dp" android:src="@drawable/widget_course_refresh" android:contentDescription="刷新课表"/>
+ </LinearLayout>
+ <LinearLayout android:id="@+id/course_widget_focus" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginTop="6dp" android:orientation="vertical" android:gravity="center_vertical" android:padding="12dp" android:background="@drawable/widget_course_focus">
+  <TextView android:id="@+id/course_widget_badge" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="下一节课" android:textColor="@color/course_widget_accent" android:textSize="12sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end"/>
+  <TextView android:id="@+id/course_widget_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:text="课程名称" android:textColor="@color/course_widget_text" android:textSize="21sp" android:textStyle="bold" android:maxLines="2" android:ellipsize="end"/>
+  <TextView android:id="@+id/course_widget_place" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="教室" android:textColor="@color/course_widget_accent" android:textSize="25sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end"/>
+  <TextView android:id="@+id/course_widget_time" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:text="第 1–2 节 · 08:30–10:00" android:textColor="@color/course_widget_secondary" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+  <Chronometer android:id="@+id/course_widget_countdown" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp" android:textColor="@color/course_widget_accent" android:textSize="12sp" android:visibility="gone"/>
+ </LinearLayout>
+ <TextView android:id="@+id/course_widget_list_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:paddingBottom="2dp" android:textColor="@color/course_widget_secondary" android:textSize="11sp" android:visibility="gone"/>
+ <LinearLayout android:id="@+id/course_widget_row0" android:layout_width="match_parent" android:layout_height="44dp" android:orientation="horizontal" android:gravity="center_vertical" android:visibility="gone">
+  <TextView android:id="@+id/course_widget_row_time0" android:layout_width="59dp" android:layout_height="wrap_content" android:textColor="@color/course_widget_accent" android:textSize="14sp" android:textStyle="bold" android:maxLines="1"/>
+  <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+   <TextView android:id="@+id/course_widget_row_name0" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/course_widget_text" android:textSize="14sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end"/>
+   <TextView android:id="@+id/course_widget_row_place0" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/course_widget_secondary" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+  </LinearLayout>
+ </LinearLayout>
+ <LinearLayout android:id="@+id/course_widget_row1" android:layout_width="match_parent" android:layout_height="44dp" android:orientation="horizontal" android:gravity="center_vertical" android:visibility="gone">
+  <TextView android:id="@+id/course_widget_row_time1" android:layout_width="59dp" android:layout_height="wrap_content" android:textColor="@color/course_widget_accent" android:textSize="14sp" android:textStyle="bold" android:maxLines="1"/>
+  <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+   <TextView android:id="@+id/course_widget_row_name1" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/course_widget_text" android:textSize="14sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end"/>
+   <TextView android:id="@+id/course_widget_row_place1" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/course_widget_secondary" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+  </LinearLayout>
+ </LinearLayout>
+ <LinearLayout android:id="@+id/course_widget_row2" android:layout_width="match_parent" android:layout_height="44dp" android:orientation="horizontal" android:gravity="center_vertical" android:visibility="gone">
+  <TextView android:id="@+id/course_widget_row_time2" android:layout_width="59dp" android:layout_height="wrap_content" android:textColor="@color/course_widget_accent" android:textSize="14sp" android:textStyle="bold" android:maxLines="1"/>
+  <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+   <TextView android:id="@+id/course_widget_row_name2" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/course_widget_text" android:textSize="14sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end"/>
+   <TextView android:id="@+id/course_widget_row_place2" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/course_widget_secondary" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+  </LinearLayout>
+ </LinearLayout>
+ <LinearLayout android:id="@+id/course_widget_row3" android:layout_width="match_parent" android:layout_height="44dp" android:orientation="horizontal" android:gravity="center_vertical" android:visibility="gone">
+  <TextView android:id="@+id/course_widget_row_time3" android:layout_width="59dp" android:layout_height="wrap_content" android:textColor="@color/course_widget_accent" android:textSize="14sp" android:textStyle="bold" android:maxLines="1"/>
+  <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+   <TextView android:id="@+id/course_widget_row_name3" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/course_widget_text" android:textSize="14sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end"/>
+   <TextView android:id="@+id/course_widget_row_place3" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/course_widget_secondary" android:textSize="13sp" android:maxLines="1" android:ellipsize="end"/>
+  </LinearLayout>
+ </LinearLayout>
+ <TextView android:id="@+id/course_widget_footer" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingTop="6dp" android:text="点击查看课表" android:textColor="@color/course_widget_secondary" android:textSize="11sp" android:maxLines="1" android:ellipsize="end"/>
+</LinearLayout>

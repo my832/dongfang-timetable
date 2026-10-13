@@ -25,9 +25,13 @@ public class CourseAlarm extends BroadcastReceiver {
         long next=CourseStore.midnight(Instant.ofEpochMilli(now).atZone(CourseStore.ZONE).toLocalDate().plusDays(1));
         if(state.optBoolean("reminders")){JSONArray courses=state.getJSONArray("courses");for(int i=0;i<courses.length();i++){long trigger=trigger(state,courses.getJSONObject(i));if(trigger>now)next=Math.min(next,trigger);}}return next;
     }
-    public static synchronized void schedule(Context c){
+    public static void schedule(Context c){
+        // Never read the store while holding the alarm lock: saves schedule updates too.
+        long next;try{next=next(CourseStore.read(c),System.currentTimeMillis());}catch(Exception ignored){return;}
+        synchronized(CourseAlarm.class){
         channel(c);AlarmManager alarm=c.getSystemService(AlarmManager.class);PendingIntent p=pending(c);alarm.cancel(p);
-        try{long next=next(CourseStore.read(c),System.currentTimeMillis());if(exact(c))alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,next,p);else alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,next,p);}catch(SecurityException e){try{alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,System.currentTimeMillis()+60000,p);}catch(Exception ignored){}}catch(Exception ignored){}
+        try{if(exact(c))alarm.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,next,p);else alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,next,p);}catch(SecurityException e){try{alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,System.currentTimeMillis()+60000,p);}catch(Exception ignored){}}catch(Exception ignored){}
+        }
     }
     public static void reset(Context c){c.getSharedPreferences("reminder_runtime",0).edit().putLong("last",System.currentTimeMillis()).apply();schedule(c);}
     @Override public void onReceive(Context c,Intent intent){

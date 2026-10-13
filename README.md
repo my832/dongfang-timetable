@@ -4,7 +4,7 @@
 
 ## 下载
 
-[下载最新 Android APK（v1.0.3）](https://github.com/my832/dongfang-timetable/releases/latest/download/dongfang-timetable-1.0.3.apk)
+[下载 Android APK（v1.0.4）](release/dongfang-timetable-1.0.4.apk?raw=true)
 
 最低支持 Android 8.0。下载 APK 后在手机上打开安装。教务系统导入需连接校园网并关闭代理。
 
@@ -17,6 +17,15 @@
 - `release/`：当前 APK
 
 页面本地运行；教务系统导入时才访问学校网站。请勿将自己的教务账号密码写入源码或公开提交。
+
+## v1.0.4 更新
+
+- 状态栏和页面共用连续背景，亮色、暗色和弹窗遮罩自然衔接。
+- 小组件突出当前／下一课程、教室、节次与时间，支持实时倒计时。
+- 大尺寸显示更多课程；今日无课时展示下次课程；支持系统暗色。
+- 在课前、上下课和跨日时自动刷新，修复保存课表与组件刷新并发导致的锁等待。
+
+按 [Android 官方系统栏适配指南](https://developer.android.com/develop/ui/views/layout/edge-to-edge) 处理透明系统栏、安全区域与图标对比度。小组件未授权准时提醒或设备休眠时，刷新可能受系统调度影响。
 
 ## 本地构建
 

@@ -46,8 +46,8 @@ public class MainActivity extends Activity {
     private int attachmentSlots = 8;
     private volatile boolean darkTheme = false;
     private int systemBarsMode = 0;
-    private int appliedWebBackground = 0;
-    private final SystemBarsBackground barsBackground = new SystemBarsBackground();
+    private int appliedWebBackground = Integer.MIN_VALUE;
+    private final SystemBarsBackground barsBackground = new SystemBarsBackground(true);
     private AlertDialog importDialog;
     private static final int PICK=100, EXPORT=101, IMPORT=102;
     private static final long MAX_FILE=20L*1024*1024, MAX_BACKUP=500L*1024*1024, MAX_STATE=32L*1024*1024;
@@ -134,7 +134,8 @@ public class MainActivity extends Activity {
     }
     private void updateSystemBars() {
         if(barsController!=null)barsController.setAppearance(darkTheme,systemBarsMode);
-        int background=darkTheme?Color.rgb(23,33,30):Color.rgb(245,246,242);
+        // The window owns the backdrop, so there is no separately painted status strip.
+        int background=Color.TRANSPARENT;
         if(web!=null&&appliedWebBackground!=background){web.setBackgroundColor(background);appliedWebBackground=background;}
     }
     public class Bridge {

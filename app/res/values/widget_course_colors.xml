@@ -1,0 +1,9 @@
+<resources>
+ <color name="course_widget_background">#F5F6F2</color>
+ <color name="course_widget_border">#DEE5DC</color>
+ <color name="course_widget_focus">#E7EEE2</color>
+ <color name="course_widget_text">#263D32</color>
+ <color name="course_widget_secondary">#64796B</color>
+ <color name="course_widget_accent">#355D4C</color>
+ <color name="course_widget_divider">#DAE3D6</color>
+</resources>
