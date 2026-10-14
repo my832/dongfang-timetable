@@ -8,6 +8,25 @@
  const time=stamp=>new Intl.DateTimeFormat('zh-CN',{timeZone:zone,hour:'2-digit',minute:'2-digit',hour12:false}).format(stamp);
  const today=()=>dateKey(Date.now());
  const sectionLabel=sections=>{const text=String(sections||'').trim(),m=text.match(/^(?:第)?(\d+)(?:\s*[-–—]\s*(\d+))?\s*节$/);return m?`第${m[1]}${m[2]&&m[2]!==m[1]?'–'+m[2]:''}节`:text;};
+ const sectionRange=value=>{const m=String(value||'').replace(/\s+/g,'').replace(/[–—]/g,'-').match(/^(?:第)?(\d+)(?:-(\d+))?节?$/);return m?[Number(m[1]),Number(m[2]||m[1])]:null;};
+ const sameCourse=(a,b)=>{const norm=v=>String(v||'').replace(/\s+/g,' ').trim().toLocaleLowerCase();return norm(a.name)===norm(b.name)&&(!norm(a.place)||!norm(b.place)||norm(a.place)===norm(b.place))&&(!norm(a.teacher)||!norm(b.teacher)||norm(a.teacher)===norm(b.teacher));};
+ function mergeCourses(courses){
+  const sorted=courses.map(c=>({...c})).sort((a,b)=>a.start-b.start||a.end-b.end),merged=[];
+  for(const course of sorted){const previous=merged[merged.length-1],a=previous&&sectionRange(previous.sections),b=sectionRange(course.sections),gap=previous?course.start-previous.end:Infinity;
+   if(previous&&a&&b&&a[1]+1===b[0]&&gap>=0&&gap<=10*60000&&dateKey(previous.start)===dateKey(course.start)&&sameCourse(previous,course)){
+    previous.end=course.end;previous.sections=`${a[0]}–${b[1]} 节`;previous.place||=course.place||'';previous.teacher||=course.teacher||'';
+   }else merged.push(course);
+  }return merged;
+ }
+ function mergeRules(rules){
+  const sorted=rules.map(r=>({...r})).sort((a,b)=>a.day-b.day||a.first-b.first),merged=[];
+  const minute=value=>{const m=String(value||'').match(/^(\d{1,2}):(\d{2})$/);return m?Number(m[1])*60+Number(m[2]):null;};
+  const adjacent=(a,b)=>{const left=minute((data.slots?.[a.last-1]||'').split('-')[1]),right=minute((data.slots?.[b.first-1]||'').split('-')[0]);return left===null||right===null||right-left>=0&&right-left<=10;};
+  for(const rule of sorted){const previous=merged[merged.length-1],weeks=r=>JSON.stringify([...(r.weeks||[])].sort((a,b)=>a-b));
+   if(previous&&previous.day===rule.day&&previous.last+1===rule.first&&sameCourse(previous,rule)&&weeks(previous)===weeks(rule)&&String(previous.weekText||'').trim()===String(rule.weekText||'').trim()&&adjacent(previous,rule))previous.last=rule.last;
+   else merged.push(rule);
+  }return merged;
+ }
  const schedule=(sections,range)=>`<div class="course-schedule">${sections?`<b>${escapeHtml(sectionLabel(sections))}</b>`:''}<span>${escapeHtml(range)}</span></div>`;
  function ruleTime(rule){const slots=data.slots||[],start=(slots[rule.first-1]||'').split('-')[0],end=(slots[rule.last-1]||'').split('-')[1];return start&&end?start+'–'+end:'时间待设置';}
  let selected=today(),week=monday(selected),data={title:'我的课程表',courses:[],lead:20,reminderMode:'school',reminders:false},busy=false;
@@ -20,16 +39,16 @@
  function render(){
   get('courseTitle').textContent=data.title||'我的课程表';get('courseWeekLabel').textContent=`${week.slice(5).replace('-','/')} — ${addDays(week,6).slice(5).replace('-','/')}`;
   const names=['一','二','三','四','五','六','日'];
-  get('courseDays').innerHTML=names.map((name,i)=>{const key=addDays(week,i),count=data.courses.filter(c=>dateKey(c.start)===key).length;return `<button data-day="${key}" class="${key===selected?'selected':''} ${key===today()?'today':''}" aria-pressed="${key===selected}"><span>${name}</span><b>${Number(key.slice(-2))}</b><i class="${count?'has-class':''}"></i></button>`;}).join('');
+  get('courseDays').innerHTML=names.map((name,i)=>{const key=addDays(week,i),count=mergeCourses(data.courses.filter(c=>dateKey(c.start)===key)).length;return `<button data-day="${key}" class="${key===selected?'selected':''} ${key===today()?'today':''}" aria-pressed="${key===selected}"><span>${name}</span><b>${Number(key.slice(-2))}</b><i class="${count?'has-class':''}"></i></button>`;}).join('');
   const now=Date.now(),isToday=selected===today();
-  const items=data.courses.filter(c=>dateKey(c.start)===selected&&(!isToday||c.end>now)).sort((a,b)=>a.start-b.start);
+  const items=mergeCourses(data.courses.filter(c=>dateKey(c.start)===selected)).filter(c=>!isToday||c.end>now);
   const upcoming=items.find(c=>c.start>now);
   get('courseDaySummary').textContent=(selected===today()?'今天':selected.slice(5).replace('-','/'))+` · ${items.length} 节课`;
   get('courseList').innerHTML=items.map((c,i)=>{const ongoing=isToday&&c.start<=now&&c.end>now,isNext=isToday&&c===upcoming;return `<article class="course-card ${ongoing?'ongoing':isNext?'upcoming':''}" style="--course-color:${['#4b86cc','#d48a35','#567e68','#ae65ac'][i%4]}"><div class="course-info">${schedule(c.sections,time(c.start)+'–'+time(c.end))}<h3>${escapeHtml(c.name)}</h3>${c.place?`<p class="course-room">${escapeHtml(c.place)}</p>`:''}<small>${escapeHtml(c.teacher)}</small></div>${ongoing||isNext?`<span class="course-now">${ongoing?'上课中':'下一节'}</span>`:''}</article>`;}).join('')||`<div class="course-empty">${isToday&&data.courses.some(c=>dateKey(c.start)===selected)?'今天的课已上完':'当天没有课程安排'}</div>`;
-  const next=data.courses.filter(c=>c.end>now).sort((a,b)=>a.start-b.start)[0];
+  const next=mergeCourses(data.courses).filter(c=>c.end>now).sort((a,b)=>a.start-b.start)[0];
   get('courseNext').textContent=next?(next.start<=now?'正在上课：':dateKey(next.start)===today()?'下一节：':`${dateKey(next.start).slice(5)} ${time(next.start)} · `)+next.name+(next.place?' · '+next.place:''):'请导入课表';
   if(data.rules?.length&&!data.courses.length){
-   const day=new Date(asDate(selected).getTime()+8*3600000).getUTCDay()||7,rules=data.rules.filter(r=>r.day===day).sort((a,b)=>a.first-b.first);
+   const day=new Date(asDate(selected).getTime()+8*3600000).getUTCDay()||7,rules=mergeRules(data.rules.filter(r=>r.day===day));
    get('courseDaySummary').textContent='教学周和作息待设置';get('courseNext').textContent='请设置学期与作息';
    get('courseList').innerHTML=rules.map(r=>`<article class="course-card" style="--course-color:#4b86cc"><div class="course-info">${schedule(r.first+'–'+r.last+' 节',ruleTime(r))}<h3>${escapeHtml(r.name)}</h3>${r.place?`<p class="course-room">${escapeHtml(r.place)}</p>`:''}<small>${escapeHtml([r.teacher,r.weekText].filter(Boolean).join(' · '))}</small></div></article>`).join('')||'<div class="course-empty">这个星期没有课程安排</div>';
   }

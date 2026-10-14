@@ -1,1 +1,2 @@
 8af0bb0cedc0379ae1f52c7276cef876c1bd98460b291680cafb5b99dc7ddce9  dongfang-timetable-1.0.4.apk
+dc598591420d888c79d0086ebda6fc63087380a785c258bc8a631055f516cc1e  dongfang-timetable-1.0.5.apk

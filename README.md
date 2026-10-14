@@ -4,7 +4,7 @@
 
 ## 下载
 
-[下载 Android APK（v1.0.4）](release/dongfang-timetable-1.0.4.apk?raw=true)
+[下载 Android APK（v1.0.5）](release/dongfang-timetable-1.0.5.apk?raw=true)
 
 最低支持 Android 8.0。下载 APK 后在手机上打开安装。教务系统导入需连接校园网并关闭代理。
 
@@ -26,6 +26,12 @@
 - 在课前、上下课和跨日时自动刷新，修复保存课表与组件刷新并发导致的锁等待。
 
 按 [Android 官方系统栏适配指南](https://developer.android.com/develop/ui/views/layout/edge-to-edge) 处理透明系统栏、安全区域与图标对比度。小组件未授权准时提醒或设备休眠时，刷新可能受系统调度影响。
+
+## v1.0.5 更新
+
+- 自动合并同一天相邻的同一课程节次（间隔不超过 10 分钟），连续时间和节次合并显示。
+- 合并后的课程只在首节开课前提醒一次，小组件同步显示完整节次与时间。
+- 其他日期、不同教室或教师不一致的课程保持分开。
 
 ## 本地构建
 

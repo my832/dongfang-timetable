@@ -25,10 +25,24 @@ public final class CourseStore {
             JSONObject item=list.getJSONObject(i);String name=item.getString("name").trim();long start=item.getLong("start"),end=item.getLong("end");
             if(name.isEmpty()||name.length()>200||start<946684800000L||start>4102444800000L||end<=start||end-start>86400000L)throw new IOException("课程名称或时间不正确（时间须为毫秒时间戳）");
             String place=item.optString("place",""),teacher=item.optString("teacher","");if(place.length()>300||teacher.length()>300)throw new IOException("课程信息过长");
-            String key=name+"|"+start+"|"+end+"|"+place;
+            String key=name+"|"+start+"|"+end+"|"+place+"|"+teacher;
             if(seen.add(key))sorted.add(new JSONObject().put("name",name).put("start",start).put("end",end).put("place",place).put("teacher",teacher).put("sections",item.optString("sections","").substring(0,Math.min(50,item.optString("sections","").length()))));
         }
-        sorted.sort(Comparator.comparingLong(a->a.optLong("start")));JSONArray normalized=new JSONArray();for(JSONObject item:sorted)normalized.put(item);
+        sorted.sort(Comparator.comparingLong((JSONObject a)->a.optLong("start")).thenComparingLong(a->a.optLong("end")));
+        List<JSONObject> merged=new ArrayList<>();
+        for(JSONObject item:sorted){
+            JSONObject previous=merged.isEmpty()?null:merged.get(merged.size()-1);
+            int[] before=previous==null?null:sectionRange(previous.optString("sections","")),after=sectionRange(item.optString("sections",""));
+            long gap=previous==null?Long.MAX_VALUE:item.optLong("start")-previous.optLong("end");
+            if(previous!=null&&before!=null&&after!=null&&before[1]+1==after[0]&&gap>=0&&gap<=10*60_000L
+                    &&Instant.ofEpochMilli(previous.optLong("start")).atZone(ZONE).toLocalDate().equals(Instant.ofEpochMilli(item.optLong("start")).atZone(ZONE).toLocalDate())
+                    &&sameCourse(previous,item)){
+                previous.put("end",item.getLong("end"));previous.put("sections",before[0]+"–"+after[1]+" 节");
+                if(previous.optString("place").isEmpty())previous.put("place",item.optString("place",""));
+                if(previous.optString("teacher").isEmpty())previous.put("teacher",item.optString("teacher",""));
+            }else merged.add(item);
+        }
+        JSONArray normalized=new JSONArray();for(JSONObject item:merged)normalized.put(item);
         String mode=value.optString("reminderMode","school");if(!mode.equals("school"))mode="custom";
         int lead=mode.equals("school")?20:value.optInt("lead",20);if(lead!=5&&lead!=10&&lead!=15&&lead!=20&&lead!=30)lead=20;
         String title=value.optString("title","我的课程表");if(title.length()>200)title=title.substring(0,200);
@@ -41,6 +55,18 @@ public final class CourseStore {
             valid.put("rules",rules).put("semesterMonday",monday).put("slots",slots);
         }
         return valid;
+    }
+    private static String comparable(String value){return value==null?"":value.replaceAll("\\s+"," ").trim().toLowerCase(Locale.ROOT);}
+    private static boolean sameCourse(JSONObject a,JSONObject b){
+        if(!comparable(a.optString("name")).equals(comparable(b.optString("name"))))return false;
+        String ap=comparable(a.optString("place")),bp=comparable(b.optString("place")),at=comparable(a.optString("teacher")),bt=comparable(b.optString("teacher"));
+        return (ap.isEmpty()||bp.isEmpty()||ap.equals(bp))&&(at.isEmpty()||bt.isEmpty()||at.equals(bt));
+    }
+    private static int[] sectionRange(String value){
+        String normalized=value==null?"":value.replaceAll("\\s+","").replace('–','-').replace('—','-');
+        java.util.regex.Matcher m=java.util.regex.Pattern.compile("^(?:第)?(\\d+)(?:-(\\d+))?节?$").matcher(normalized);
+        if(!m.matches())return null;
+        try{int first=Integer.parseInt(m.group(1)),last=m.group(2)==null?first:Integer.parseInt(m.group(2));return first>0&&last>=first?new int[]{first,last}:null;}catch(NumberFormatException e){return null;}
     }
     public static synchronized void write(Context c,JSONObject value)throws Exception{
         JSONObject valid=validate(value);AtomicFile f=file(c);FileOutputStream out=null;
