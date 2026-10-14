@@ -21,9 +21,11 @@
   get('courseTitle').textContent=data.title||'我的课程表';get('courseWeekLabel').textContent=`${week.slice(5).replace('-','/')} — ${addDays(week,6).slice(5).replace('-','/')}`;
   const names=['一','二','三','四','五','六','日'];
   get('courseDays').innerHTML=names.map((name,i)=>{const key=addDays(week,i),count=data.courses.filter(c=>dateKey(c.start)===key).length;return `<button data-day="${key}" class="${key===selected?'selected':''} ${key===today()?'today':''}" aria-pressed="${key===selected}"><span>${name}</span><b>${Number(key.slice(-2))}</b><i class="${count?'has-class':''}"></i></button>`;}).join('');
-  const items=data.courses.filter(c=>dateKey(c.start)===selected).sort((a,b)=>a.start-b.start),now=Date.now();
+  const now=Date.now(),isToday=selected===today();
+  const items=data.courses.filter(c=>dateKey(c.start)===selected&&(!isToday||c.end>now)).sort((a,b)=>a.start-b.start);
+  const upcoming=items.find(c=>c.start>now);
   get('courseDaySummary').textContent=(selected===today()?'今天':selected.slice(5).replace('-','/'))+` · ${items.length} 节课`;
-  get('courseList').innerHTML=items.map((c,i)=>{const ended=c.end<=now,ongoing=c.start<=now&&!ended;return `<article class="course-card ${ended?'ended':''}" style="--course-color:${['#4b86cc','#d48a35','#567e68','#ae65ac'][i%4]}"><div class="course-info">${schedule(c.sections,time(c.start)+'–'+time(c.end))}<h3>${escapeHtml(c.name)}</h3>${c.place?`<p class="course-room">${escapeHtml(c.place)}</p>`:''}<small>${escapeHtml(c.teacher)}</small></div>${ongoing?'<span class="course-now">上课中</span>':''}</article>`;}).join('')||'<div class="course-empty">今天没有课程安排</div>';
+  get('courseList').innerHTML=items.map((c,i)=>{const ongoing=isToday&&c.start<=now&&c.end>now,isNext=isToday&&c===upcoming;return `<article class="course-card ${ongoing?'ongoing':isNext?'upcoming':''}" style="--course-color:${['#4b86cc','#d48a35','#567e68','#ae65ac'][i%4]}"><div class="course-info">${schedule(c.sections,time(c.start)+'–'+time(c.end))}<h3>${escapeHtml(c.name)}</h3>${c.place?`<p class="course-room">${escapeHtml(c.place)}</p>`:''}<small>${escapeHtml(c.teacher)}</small></div>${ongoing||isNext?`<span class="course-now">${ongoing?'上课中':'下一节'}</span>`:''}</article>`;}).join('')||`<div class="course-empty">${isToday&&data.courses.some(c=>dateKey(c.start)===selected)?'今天的课已上完':'当天没有课程安排'}</div>`;
   const next=data.courses.filter(c=>c.end>now).sort((a,b)=>a.start-b.start)[0];
   get('courseNext').textContent=next?(next.start<=now?'正在上课：':dateKey(next.start)===today()?'下一节：':`${dateKey(next.start).slice(5)} ${time(next.start)} · `)+next.name+(next.place?' · '+next.place:''):'请导入课表';
   if(data.rules?.length&&!data.courses.length){
@@ -62,7 +64,8 @@
  get('courseFileImport').onclick=()=>{if(!get('courseImportMonday').value){toast('请选择课表对应的一周');return;}if(native)Native.importCourseFile(get('courseImportMonday').value);else toast('请在安卓应用中选择课表 HTML / JSON 文件');};
  get('courseClear').onclick=()=>{confirmDialog('清空课程表？','将删除已导入的课程并取消对应提醒。',()=>{if(native)Native.clearCourses();else{data.courses=[];delete data.rules;data.reminders=false;localStorage.setItem('shiji-courses',JSON.stringify(data));window.refreshCourses();}toast('课程表已清空');},'清空');};
  if(get('widgetsMenu'))get('widgetsMenu').onclick=()=>{window.openCourses();get('courseWidgets').open=true;get('courseWidgets').scrollIntoView({block:'nearest'});};
- setInterval(()=>{if(!get('courseSheet').hidden)render();},60000);
+ setInterval(()=>{if(!get('courseSheet').hidden)render();},10000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!get('courseSheet').hidden)render();});
  let pendingHtml=null;
  function renderTiming(){
   get('semesterMonday').value=data.semesterMonday||'';
