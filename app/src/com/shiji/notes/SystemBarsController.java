@@ -53,7 +53,7 @@ public final class SystemBarsController {
             background.setInsets(top,bottom);
             return Build.VERSION.SDK_INT>=30?WindowInsets.CONSUMED:insets.consumeSystemWindowInsets();
         });
-        setAppearance(dark,0);root.requestApplyInsets();
+        background.setMotionEnabled(false);setAppearance(dark,0);background.setMotionEnabled(true);root.requestApplyInsets();
     }
     public void setAppearance(boolean dark,int mode){
         this.dark=dark;this.mode=mode;

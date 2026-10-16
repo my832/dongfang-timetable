@@ -38,6 +38,7 @@ import java.util.zip.*;
 
 public class MainActivity extends Activity {
     private WebView web;
+    private boolean pageReady;
     private FrameLayout root;
     private SystemBarsController barsController;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
@@ -69,6 +70,7 @@ public class MainActivity extends Activity {
         attachmentDir().mkdirs();
         root = new FrameLayout(this);
         web = new WebView(this);
+        web.setAlpha(0f);
         root.addView(web, new FrameLayout.LayoutParams(-1,-1));
         barsController=new SystemBarsController(this,root,barsBackground,darkTheme);
         setContentView(root);
@@ -83,7 +85,17 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= 29) settings.setForceDark(WebSettings.FORCE_DARK_OFF);
         web.addJavascriptInterface(new Bridge(), "Native");
         web.setWebViewClient(new WebViewClient() {
-            @Override public void onPageFinished(WebView view,String url){handleLaunch();}
+            @Override public void onPageFinished(WebView view,String url){
+                view.postVisualStateCallback(0,new WebView.VisualStateCallback(){
+                    @Override public void onComplete(long requestId){
+                        if(isFinishing()||web!=view||pageReady)return;
+                        pageReady=true;
+                        if(android.animation.ValueAnimator.areAnimatorsEnabled())view.animate().alpha(1f).setDuration(120).start();
+                        else view.setAlpha(1f);
+                        handleLaunch();
+                    }
+                });
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return true; }
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -99,7 +111,7 @@ public class MainActivity extends Activity {
                     String mime;
                     if (asset.equals("index.html")) mime="text/html";
                     else if (asset.equals("style.css") || asset.equals("large.css") || asset.equals("glass.css") || asset.equals("courses.css") || asset.equals("standalone.css") || asset.equals("design.css")) mime="text/css";
-                    else if (asset.equals("app.js") || asset.equals("init.js") || asset.equals("image-zoom.js") || asset.equals("courses.js") || asset.equals("school-import.js") || asset.equals("standalone.js") || asset.equals("campus.js")) mime="application/javascript";
+                    else if (asset.equals("settings.js") || asset.equals("motion.js") || asset.equals("app.js") || asset.equals("init.js") || asset.equals("image-zoom.js") || asset.equals("courses.js") || asset.equals("school-import.js") || asset.equals("standalone.js") || asset.equals("campus.js")) mime="application/javascript";
                     else if (asset.equals("campus-map.png") || asset.equals("school-timetable.png")) mime="image/png";
                     else return emptyResponse();
                     return new WebResourceResponse(mime,"UTF-8",getAssets().open(asset));
@@ -107,7 +119,7 @@ public class MainActivity extends Activity {
             }
         });
         web.loadUrl("https://app.local/index.html");
-        CourseAlarm.schedule(this);
+        worker.execute(()->CourseAlarm.schedule(MainActivity.this));
     }
     private WebResourceResponse emptyResponse() { return new WebResourceResponse("text/plain","UTF-8",new ByteArrayInputStream(new byte[0])); }
     private void javascript(String script) { runOnUiThread(() -> { if (!isFinishing() && web != null) web.evaluateJavascript(script,null); }); }
@@ -157,8 +169,10 @@ public class MainActivity extends Activity {
         @JavascriptInterface public boolean isSystemDark() { return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)==Configuration.UI_MODE_NIGHT_YES; }
         @JavascriptInterface public boolean isDarkTheme() { return darkTheme; }
         @JavascriptInterface public void setSystemBarsMode(int mode) { runOnUiThread(()->{int next=Math.max(0,Math.min(2,mode));if(systemBarsMode==next)return;systemBarsMode=next;updateSystemBars();}); }
-        @JavascriptInterface public void setTheme(boolean dark) {
+        @JavascriptInterface public void setTheme(boolean dark) { setThemeMotion(dark,true); }
+        @JavascriptInterface public void setThemeMotion(boolean dark,boolean animate) {
             runOnUiThread(() -> {
+                barsBackground.setMotionEnabled(animate);
                 if(darkTheme==dark)return;
                 darkTheme=dark;
                 updateSystemBars();
@@ -322,9 +336,9 @@ public class MainActivity extends Activity {
     private void requestCourseNotifications(){CourseAlarm.channel(this);if(Build.VERSION.SDK_INT>=33&&checkSelfPermission("android.permission.POST_NOTIFICATIONS")!=android.content.pm.PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},104);else if(!CourseAlarm.notifications(this)){try{startActivity(new Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE,getPackageName()));}catch(Exception ignored){}}}
     @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] grants){super.onRequestPermissionsResult(request,permissions,grants);if(request==104){CourseAlarm.reset(this);javascript("window.refreshCoursePermissions && window.refreshCoursePermissions()");}}
     @Override public void onWindowFocusChanged(boolean focus){super.onWindowFocusChanged(focus);if(focus&&barsController!=null)barsController.refresh();}
-    @Override protected void onResume(){super.onResume();if(barsController!=null)barsController.refresh();if(web!=null){CourseAlarm.schedule(this);javascript("window.refreshCourses && window.refreshCourses()");}}
+    @Override protected void onResume(){super.onResume();if(barsController!=null)barsController.refresh();if(web!=null&&pageReady){worker.execute(()->CourseAlarm.schedule(MainActivity.this));javascript("window.refreshCourses && window.refreshCourses()");}}
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);handleLaunch();}
-    private void handleLaunch(){Intent intent=getIntent();if(intent.getBooleanExtra("openCourses",false)){javascript("window.openCourses && window.openCourses()");intent.removeExtra("openCourses");}else if(intent.getBooleanExtra("openResident",false)){javascript("window.openResidentNotes && window.openResidentNotes()");intent.removeExtra("openResident");}}
+    private void handleLaunch(){if(!pageReady)return;Intent intent=getIntent();if(intent.getBooleanExtra("openCourses",false)){javascript("window.openCourses && window.openCourses()");intent.removeExtra("openCourses");}else if(intent.getBooleanExtra("openResident",false)){javascript("window.openResidentNotes && window.openResidentNotes()");intent.removeExtra("openResident");}}
     @Override public void onBackPressed() { javascript("window.onNativeBack()"); }
     @Override public void onConfigurationChanged(Configuration config) { super.onConfigurationChanged(config);javascript("window.onNativeThemeChanged && window.onNativeThemeChanged()"); }
     @Override protected void onDestroy() { if(importDialog!=null&&importDialog.isShowing())importDialog.dismiss();if(web!=null){web.removeJavascriptInterface("Native");web.destroy();web=null;}worker.shutdown();super.onDestroy(); }
